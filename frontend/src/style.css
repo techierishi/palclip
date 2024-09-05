@@ -1,0 +1,23 @@
+
+
+html {
+    background-color: rgb(221, 221, 221);
+    text-align: center;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 0;  
+    background: transparent;  
+}
+
+::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.list-card {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
