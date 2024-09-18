@@ -53,8 +53,7 @@ function App() {
       console.log("onCopyEvent.message ", message);
       AppService.GetClipData("none").then(updateClipList);
     };
-    const win = window;
-    win.runtime.EventsOn("copyEvent", onCopyEvent);
+    Events.On("copyEvent", onCopyEvent);
   }
 
   function copyItem(e, itemContent) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	_ "embed"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
@@ -24,6 +26,7 @@ var assets embed.FS
 // logs any error that might occur.
 func main() {
 
+	appService := AppService{}
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
 	// 'Assets' configures the asset server with the 'FS' variable pointing to the frontend files.
@@ -33,7 +36,7 @@ func main() {
 		Name:        "palclip",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(&AppService{}),
+			application.NewService(&appService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -42,6 +45,12 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
+
+	app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+		app.EmitEvent("Backend:GlobalHotkeyEvent", time.Now().String())
+		appService.Startup(context.Background(), app)
+	})
+
 	systemTray := app.NewSystemTray()
 	isFramelss := runtime.GOOS == "windows"
 
@@ -95,10 +104,7 @@ func main() {
 	go func() {
 		for {
 			now := time.Now().Format(time.RFC1123)
-			app.Events.Emit(&application.WailsEvent{
-				Name: "time",
-				Data: now,
-			})
+			app.EmitEvent("time", now)
 			time.Sleep(time.Second)
 		}
 	}()
@@ -110,4 +116,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }

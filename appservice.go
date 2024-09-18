@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"palclip/pkg/clipm"
 	"palclip/pkg/config"
-	"time"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.design/x/clipboard"
 	"golang.design/x/hotkey"
 	"golang.design/x/hotkey/mainthread"
@@ -28,9 +27,9 @@ func NewAppService() *AppService {
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
-func (a *AppService) startup(ctx context.Context) {
+func (a *AppService) Startup(ctx context.Context, app *application.App) {
 	a.ctx = ctx
-	go clipm.Record(ctx)
+	go clipm.Record(ctx, app)
 	// register hotkey on the app startup
 	// if you try to register it anywhere earlier - the app will hang on compile step
 	mainthread.Init(a.RegisterHotKey)
@@ -55,6 +54,9 @@ func (a *AppService) GetClipData(name string) string {
 		fmt.Println("Reverse", err)
 	}
 	return string(jsonClipList)
+
+	// return string("[{\"ID\":0,\"application\":\"\",\"timestamp\":1723152398457,\"content\":\"isFramelss\",\"tag\":null}]")
+
 }
 
 func (a *AppService) CopyItemContent(content string) {
@@ -87,8 +89,6 @@ func registerHotkey(a *AppService) {
 	<-hk.Keyup()
 	// do anything you want on Key up event
 	fmt.Printf("hotkey: %v is up\n", hk)
-
-	runtime.EventsEmit(a.ctx, "Backend:GlobalHotkeyEvent", time.Now().String())
 
 	hk.Unregister()
 	fmt.Printf("hotkey: %v is unregistered\n", hk)

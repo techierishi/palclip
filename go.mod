@@ -8,8 +8,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
 	github.com/techierishi/pal v0.2.25
-	github.com/wailsapp/wails/v2 v2.9.1
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.6
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.7
 	go.etcd.io/bbolt v1.3.11
 	golang.design/x/clipboard v0.7.0
 	golang.design/x/hotkey v0.4.1
@@ -35,7 +34,6 @@ require (
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
-	github.com/leaanthony/slicer v1.6.0 // indirect
 	github.com/leaanthony/u v1.1.0 // indirect
 	github.com/lmittmann/tint v1.0.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -46,7 +44,7 @@ require (
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
-	github.com/wailsapp/go-webview2 v1.0.11 // indirect
+	github.com/wailsapp/go-webview2 v1.0.15 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect

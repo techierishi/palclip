@@ -7,7 +7,7 @@ import (
 
 	"palclip/pkg/util"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.design/x/clipboard"
 )
 
@@ -23,7 +23,7 @@ func itob(v int) []byte {
 	return b
 }
 
-func Record(ctx context.Context) error {
+func Record(ctx context.Context, app *application.App) error {
 	logger := util.GetLogInstance()
 	logger.Info().Msg("Clipboard recording started...")
 
@@ -54,7 +54,7 @@ func Record(ctx context.Context) error {
 
 		str := util.CleanStr(copiedStr).StandardizeSpaces().TruncateText(10).ReplaceNewLine()
 		logger.Info().Msg(string(str + "... COPIED!"))
-		runtime.EventsEmit(ctx, "copyEvent", nil)
+		app.EmitEvent("copyEvent", nil)
 
 	}
 

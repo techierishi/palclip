@@ -6,6 +6,10 @@
 // @ts-ignore: Unused imports
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as application$0 from "../github.com/wailsapp/wails/v3/pkg/application/models.js";
+
 /**
  * @param {string} content
  * @returns {Promise<void> & { cancel(): void }}
@@ -40,5 +44,16 @@ export function Greet(name) {
  */
 export function RegisterHotKey() {
     let $resultPromise = /** @type {any} */($Call.ByID(3452269361));
+    return $resultPromise;
+}
+
+/**
+ * startup is called when the app starts. The context is saved
+ * so we can call the runtime methods
+ * @param {application$0.App | null} app
+ * @returns {Promise<void> & { cancel(): void }}
+ */
+export function Startup(app) {
+    let $resultPromise = /** @type {any} */($Call.ByID(2617913455, app));
     return $resultPromise;
 }
