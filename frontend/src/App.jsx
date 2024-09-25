@@ -86,7 +86,7 @@ function App() {
     console.log("markSecret...");
     EventsEmit("mark_secret", item.hash);
     toast({ description: "Marked secret!", duration: 500 });
-    // window.location.reload();
+    window.location.reload();
     return false;
   }
 

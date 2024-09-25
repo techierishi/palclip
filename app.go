@@ -31,6 +31,13 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	wails_runtime.EventsOn(ctx, "mark_secret", func(optionalData ...interface{}) {
 		fmt.Println("mark_secret", optionalData)
+		clipDb := config.GetInstance()
+
+		clipm := &clipm.ClipM{
+			DB: clipDb.DB,
+		}
+
+		clipm.MarkSecret(string(optionalData[0].(string)))
 
 	})
 
