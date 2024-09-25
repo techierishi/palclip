@@ -95,7 +95,7 @@ func registerHotkey(a *AppService) {
 	hk.Unregister()
 	fmt.Printf("hotkey: %v is unregistered\n", hk)
 
-	a.app.EmitEvent("window_visibility", "show")
+	a.app.EmitEvent("window_show", true)
 	// reattach listener
 	registerHotkey(a)
 }

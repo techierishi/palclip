@@ -16,11 +16,11 @@ type ClipM struct {
 }
 
 type ClipInfo struct {
-	ID          int
 	Application string   `json:"application"`
 	Timestamp   int64    `json:"timestamp"`
 	Content     string   `json:"content"`
-	Hash        string   `json:"-"`
+	Hash        string   `json:"hash"`
+	IsSecret    bool     `json:"is_secret"`
 	Tag         []string `json:"tag"`
 }
 
@@ -71,6 +71,7 @@ func (clipm *ClipM) ReadAll() (*[]ClipInfo, error) {
 				clipm.Logger.Printf("Error decoding JSON for key %s: %v", k, err)
 				return nil
 			}
+			data.Hash = string(k)
 			clipInfos = append(clipInfos, data)
 			return nil
 		})
@@ -96,7 +97,29 @@ func (clipm *ClipM) Update(key string, clipInfo ClipInfo) error {
 	})
 }
 
-func (clipm *ClipM) Delete(clipInfoID int) error {
+func (clipm *ClipM) MarkSecret(key string) error {
+	return clipm.DB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(config.ClipBucket)
+		if bucket == nil {
+			return fmt.Errorf("clipInfo not found")
+		}
+		var clipInfo ClipInfo
+		data := bucket.Get([]byte(key))
+		err := json.Unmarshal(data, &clipInfo)
+		if err != nil {
+			return err
+		}
+		clipInfo.IsSecret = true
+		fmt.Println("MarkSecret.clipInfo", clipInfo)
+		data, err = json.Marshal(clipInfo)
+		if err != nil {
+			return err
+		}
+		return bucket.Put([]byte(key), data)
+	})
+}
+
+func (clipm *ClipM) Delete() error {
 	return clipm.DB.Update(func(tx *bolt.Tx) error {
 		return tx.DeleteBucket(config.ClipBucket)
 	})

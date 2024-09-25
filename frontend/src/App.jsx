@@ -62,44 +62,49 @@ function App() {
       console.log("onCopyEvent.message ", message);
       AppService.GetClipData("none").then(updateClipList);
     };
-    Events.On("copyEvent", onCopyEvent);
+    Events.On("copy_event", onCopyEvent);
   }
 
   function copyItem(e, itemContent) {
     e.preventDefault();
     console.log("copyItem...");
     AppService.CopyItemContent(itemContent);
-    Events.Emit("window_visibility", "hide");
+    Events.Emit(
+      { name: "window_hide", data: true });
     toast({ description: "Copied!", duration: 500 });
     return false;
   }
 
-  function markSecret(e, itemContent) {
+  function markSecret(e, item) {
     e.preventDefault();
     console.log("markSecret...");
-    Events.Emit("mark_secret", itemContent);
+    Events.Emit({ name: "mark_secret", data: item.hash });
     toast({ description: "Marked secret!", duration: 500 });
+    window.location.reload()
     return false;
   }
 
   function quit(e) {
     e.preventDefault();
     console.log("quit...");
-    Events.Emit("menu_item", "quit");
+    Events.Emit(
+      { name: "menu_quit", data: true });
     return false;
   }
 
   function settings(e) {
     e.preventDefault();
     console.log("settings...");
-    Events.Emit("menu_item", "settings");
+    Events.Emit(
+      { name: "menu_settings", data: true});
     return false;
   }
 
   function clear(e) {
     e.preventDefault();
     console.log("clear...");
-    Events.Emit("menu_item", "clear");
+    Events.Emit(
+      { name: "menu_clear", data: true});
     return false;
   }
 
@@ -123,7 +128,12 @@ function App() {
     return false;
   }
 
-  function clearStr(str) {
+  function clearStr(item) {
+    if(item.is_secret){
+      return "**********"
+    }
+
+    let str = item.content
     if (str) {
       str = str.trim();
       return str.slice(0, 40) + "...";
@@ -164,7 +174,7 @@ function App() {
         <CardBody style={{ padding: "10px" }}>
           <Stack spacing="2">
             {filteredData.map((itm) => (
-              <Box>
+              <Box key={itm.hash}>
                 <Flex>
                   <Text
                     pt="2"
@@ -172,7 +182,7 @@ function App() {
                     flex="1"
                     style={{ textAlign: "left" }}
                   >
-                    {clearStr(itm.content)}
+                    {clearStr(itm)}
                   </Text>
                   <Text pt="2" fontSize="xs" color="#cccccc">
                     {new Date(itm.timestamp).toISOString()}
@@ -184,7 +194,7 @@ function App() {
                     aria-label="Secret"
                     size="sm"
                     icon={<LockIcon color={"teal"} />}
-                    onClick={(e) => markSecret(e, itm.content)}
+                    onClick={(e) => markSecret(e, itm)}
                   >
                     Secret
                   </IconButton>

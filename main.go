@@ -6,6 +6,8 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
+	"palclip/pkg/clipm"
+	"palclip/pkg/config"
 	"runtime"
 	"time"
 
@@ -77,32 +79,39 @@ func main() {
 		Frameless: isFramelss,
 	})
 
-	app.OnEvent("window_visibility", func(event *application.CustomEvent) {
-		fmt.Println("window_visibility", event.Data == "show")
-		switch v := event.Data.(type) {
-		case int:
-			fmt.Printf("Integer: %v", v)
-		case float64:
-			fmt.Printf("Float64: %v", v)
-		case string:
-			fmt.Printf("String: %v", v)
-		default:
-			fmt.Printf("I don't know, ask stackoverflow.")
-		}
-
-		if event.Data == "show" {
-			window.Hide()
-			app.Hide()
-		} else {
-			window.Show()
-			app.Show()
-		}
+	app.OnEvent("window_show", func(event *application.CustomEvent) {
+		fmt.Println("window_show", event.Data)
+		window.Show()
 	})
 
-	app.OnEvent("menu_item", func(event *application.CustomEvent) {
-		fmt.Println("menu_item", event.Data, event.Data == "show")
+	app.OnEvent("window_hide", func(event *application.CustomEvent) {
+		fmt.Println("window_hide", event.Data)
+		window.Hide()
+	})
+
+	app.OnEvent("menu_quit", func(event *application.CustomEvent) {
+		fmt.Println("menu_quit", event.Data)
 		app.Quit()
 	})
+
+	app.OnEvent("menu_clear", func(event *application.CustomEvent) {
+		fmt.Println("menu_clear", event.Data)
+		clipDb := config.GetInstance()
+		clipm := clipm.ClipM{
+			DB: clipDb.DB,
+		}
+		clipm.Delete()
+	})
+
+	app.OnEvent("mark_secret", func(event *application.CustomEvent) {
+		fmt.Println("mark_secret", event.Data)
+		clipDb := config.GetInstance()
+		clipm := clipm.ClipM{
+			DB: clipDb.DB,
+		}
+		clipm.MarkSecret(event.Data.(string))
+	})
+
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}

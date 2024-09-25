@@ -54,7 +54,7 @@ func Record(ctx context.Context, app *application.App) error {
 
 		str := util.CleanStr(copiedStr).StandardizeSpaces().TruncateText(10).ReplaceNewLine()
 		logger.Info().Msg(string(str + "... COPIED!"))
-		app.EmitEvent("copyEvent", nil)
+		app.EmitEvent("copy_event", nil)
 
 	}
 
