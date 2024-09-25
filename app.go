@@ -6,38 +6,41 @@ import (
 	"fmt"
 	"palclip/pkg/clipm"
 	"palclip/pkg/config"
+	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	wails_runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.design/x/clipboard"
 	"golang.design/x/hotkey"
 	"golang.design/x/hotkey/mainthread"
 )
 
-type AppService struct {
+// App struct
+type App struct {
 	ctx context.Context
-	app *application.App
 }
 
-func (g *AppService) Greet(name string) string {
-	return "Hello " + name + "!"
-}
-
-func NewAppService() *AppService {
-	return &AppService{}
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
 }
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
-func (a *AppService) Startup(ctx context.Context, app *application.App) {
+func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.app = app
-	go clipm.Record(ctx, app)
+	wails_runtime.EventsOn(ctx, "mark_secret", func(optionalData ...interface{}) {
+		fmt.Println("mark_secret", optionalData)
+
+	})
+
+	go clipm.Record(ctx)
 	// register hotkey on the app startup
 	// if you try to register it anywhere earlier - the app will hang on compile step
 	mainthread.Init(a.RegisterHotKey)
 }
 
-func (a *AppService) GetClipData(name string) string {
+func (a *App) GetClipData(name string) string {
 
 	clipDb := config.GetInstance()
 
@@ -56,23 +59,20 @@ func (a *AppService) GetClipData(name string) string {
 		fmt.Println("Reverse", err)
 	}
 	return string(jsonClipList)
-
-	// return string("[{\"ID\":0,\"application\":\"\",\"timestamp\":1723152398457,\"content\":\"isFramelss\",\"tag\":null}]")
-
 }
 
-func (a *AppService) CopyItemContent(content string) {
+func (a *App) CopyItemContent(content string) {
 	fmt.Println("Copied the content...")
 	clipboard.Write(clipboard.FmtText, []byte(content))
 }
 
 // just a wrapper to have access to App functions
 // not necessary if you don't plan to do anything with your App on shortcut use
-func (a *AppService) RegisterHotKey() {
+func (a *App) RegisterHotKey() {
 	registerHotkey(a)
 }
 
-func registerHotkey(a *AppService) {
+func registerHotkey(a *App) {
 	// the actual shortcut keybind - Ctrl + Shift + S
 	// for more info - refer to the golang.design/x/hotkey documentation
 	hk := hotkey.New([]hotkey.Modifier{hotkey.ModCtrl, hotkey.ModShift}, hotkey.KeySpace)
@@ -92,10 +92,11 @@ func registerHotkey(a *AppService) {
 	// do anything you want on Key up event
 	fmt.Printf("hotkey: %v is up\n", hk)
 
+	runtime.EventsEmit(a.ctx, "Backend:GlobalHotkeyEvent", time.Now().String())
+
 	hk.Unregister()
 	fmt.Printf("hotkey: %v is unregistered\n", hk)
 
-	a.app.EmitEvent("window_show", true)
 	// reattach listener
 	registerHotkey(a)
 }

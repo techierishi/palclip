@@ -1,6 +1,3 @@
-build/nsis/
-build/appimage/
-bin/
+build/bin
 node_modules
 frontend/dist
-.task/

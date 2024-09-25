@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { GetClipData, CopyItemContent } from "../wailsjs/go/main/App";
 
-import { AppService } from "../bindings/palclip";
-import { Events, WML } from "@wailsio/runtime";
+import { EventsOn, EventsEmit } from "../wailsjs/runtime/runtime";
 import {
   Card,
   CardHeader,
@@ -36,7 +36,7 @@ function App() {
   const updateClipList = (result) => {
     const res = JSON.parse(result);
     setClipList(res);
-    setFilteredData(res)
+    setFilteredData(res);
   };
 
   function filterByString(arr, searchString, key) {
@@ -53,58 +53,61 @@ function App() {
   };
 
   useEffect(() => {
+    EventsOn("Backend:GlobalHotkeyEvent", globalHotkeyEventHandler);
+
     clipData();
   }, []);
 
+  function globalHotkeyEventHandler(time) {
+    setCurrentTime(time);
+    window.runtime.WindowShow();
+  }
+
   function clipData() {
-    AppService.GetClipData("none").then(updateClipList);
+    GetClipData("none").then(updateClipList);
     const onCopyEvent = (message) => {
       console.log("onCopyEvent.message ", message);
-      AppService.GetClipData("none").then(updateClipList);
+      GetClipData("none").then(updateClipList);
     };
-    Events.On("copy_event", onCopyEvent);
+    window.runtime.EventsOn("copy_event", onCopyEvent);
   }
 
   function copyItem(e, itemContent) {
     e.preventDefault();
     console.log("copyItem...");
-    AppService.CopyItemContent(itemContent);
-    Events.Emit(
-      { name: "window_hide", data: true });
+    CopyItemContent(itemContent);
     toast({ description: "Copied!", duration: 500 });
+    window.runtime.WindowHide();
     return false;
   }
 
   function markSecret(e, item) {
     e.preventDefault();
     console.log("markSecret...");
-    Events.Emit({ name: "mark_secret", data: item.hash });
+    EventsEmit("mark_secret", item.hash);
     toast({ description: "Marked secret!", duration: 500 });
-    window.location.reload()
+    // window.location.reload();
     return false;
   }
 
   function quit(e) {
     e.preventDefault();
     console.log("quit...");
-    Events.Emit(
-      { name: "menu_quit", data: true });
+    EventsEmit("menu_quit", true);
     return false;
   }
 
   function settings(e) {
     e.preventDefault();
     console.log("settings...");
-    Events.Emit(
-      { name: "menu_settings", data: true});
+    EventsEmit("menu_settings", true);
     return false;
   }
 
   function clear(e) {
     e.preventDefault();
     console.log("clear...");
-    Events.Emit(
-      { name: "menu_clear", data: true});
+    EventsEmit("menu_clear", true);
     return false;
   }
 
@@ -129,11 +132,11 @@ function App() {
   }
 
   function clearStr(item) {
-    if(item.is_secret){
-      return "**********"
+    if (item.is_secret) {
+      return "**********";
     }
 
-    let str = item.content
+    let str = item.content;
     if (str) {
       str = str.trim();
       return str.slice(0, 40) + "...";
