@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	_ "embed"
+	"fmt"
 	"log"
 	"runtime"
 	"time"
@@ -34,7 +35,7 @@ func main() {
 	// 'Mac' options tailor the application when running an macOS.
 	app := application.New(application.Options{
 		Name:        "palclip",
-		Description: "A demo of using raw HTML & CSS",
+		Description: "Cross platform clipboard manager.",
 		Services: []application.Service{
 			application.NewService(&appService),
 		},
@@ -59,8 +60,8 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Window 1",
+	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title: "PalClip",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,
@@ -76,6 +77,32 @@ func main() {
 		Frameless: isFramelss,
 	})
 
+	app.OnEvent("window_visibility", func(event *application.CustomEvent) {
+		fmt.Println("window_visibility", event.Data == "show")
+		switch v := event.Data.(type) {
+		case int:
+			fmt.Printf("Integer: %v", v)
+		case float64:
+			fmt.Printf("Float64: %v", v)
+		case string:
+			fmt.Printf("String: %v", v)
+		default:
+			fmt.Printf("I don't know, ask stackoverflow.")
+		}
+
+		if event.Data == "show" {
+			window.Hide()
+			app.Hide()
+		} else {
+			window.Show()
+			app.Show()
+		}
+	})
+
+	app.OnEvent("menu_item", func(event *application.CustomEvent) {
+		fmt.Println("menu_item", event.Data, event.Data == "show")
+		app.Quit()
+	})
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}

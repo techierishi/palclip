@@ -15,6 +15,7 @@ import (
 
 type AppService struct {
 	ctx context.Context
+	app *application.App
 }
 
 func (g *AppService) Greet(name string) string {
@@ -29,6 +30,7 @@ func NewAppService() *AppService {
 // so we can call the runtime methods
 func (a *AppService) Startup(ctx context.Context, app *application.App) {
 	a.ctx = ctx
+	a.app = app
 	go clipm.Record(ctx, app)
 	// register hotkey on the app startup
 	// if you try to register it anywhere earlier - the app will hang on compile step
@@ -93,6 +95,7 @@ func registerHotkey(a *AppService) {
 	hk.Unregister()
 	fmt.Printf("hotkey: %v is unregistered\n", hk)
 
+	a.app.EmitEvent("window_visibility", "show")
 	// reattach listener
 	registerHotkey(a)
 }
