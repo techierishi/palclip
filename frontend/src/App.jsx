@@ -59,14 +59,12 @@ function App() {
   }, []);
 
   function globalHotkeyEventHandler(time) {
-    setCurrentTime(time);
     window.runtime.WindowShow();
   }
 
   function clipData() {
     GetClipData("none").then(updateClipList);
     const onCopyEvent = (message) => {
-      console.log("onCopyEvent.message ", message);
       GetClipData("none").then(updateClipList);
     };
     window.runtime.EventsOn("copy_event", onCopyEvent);
@@ -74,7 +72,6 @@ function App() {
 
   function copyItem(e, itemContent) {
     e.preventDefault();
-    console.log("copyItem...");
     CopyItemContent(itemContent);
     toast({ description: "Copied!", duration: 500 });
     window.runtime.WindowHide();
@@ -83,7 +80,6 @@ function App() {
 
   function markSecret(e, item) {
     e.preventDefault();
-    console.log("markSecret...");
     EventsEmit("mark_secret", item.hash);
     toast({ description: "Marked secret!", duration: 500 });
     window.location.reload();
@@ -132,14 +128,19 @@ function App() {
   }
 
   function clearStr(item) {
-    if (item.is_secret) {
-      return "**********";
+    let str = item.content;
+    if (!str){
+      return str
     }
 
-    let str = item.content;
-    if (str) {
-      str = str.trim();
-      return str.slice(0, 40) + "...";
+    if (item.is_secret) {
+      str = str.trim().replace(/ /g, '');
+      return str.slice(0, 3) + "******";
+    }
+
+    if (str.length > 50) {
+      str = str.trim().replace(/ /g, '');
+      return str.slice(0, 50) + "...";
     }
     return str;
   }
