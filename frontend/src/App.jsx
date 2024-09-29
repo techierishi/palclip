@@ -138,9 +138,9 @@ function App() {
       return str.slice(0, 3) + "******";
     }
 
-    if (str.length > 50) {
+    if (str.length > 40) {
       str = str.trim().replace(/ /g, '');
-      return str.slice(0, 50) + "...";
+      return str.slice(0, 40) + "...";
     }
     return str;
   }
