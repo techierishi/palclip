@@ -119,10 +119,25 @@ func (clipm *ClipM) MarkSecret(key string) error {
 	})
 }
 
-func (clipm *ClipM) Delete() error {
-	return clipm.DB.Update(func(tx *bolt.Tx) error {
+func (clipm *ClipM) DeleteBucket() error {
+	err := clipm.DB.Update(func(tx *bolt.Tx) error {
 		return tx.DeleteBucket(config.ClipBucket)
 	})
+
+	if err != nil {
+		return err
+	}
+
+	err = clipm.DB.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(config.ClipBucket)
+		return err
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (clipm *ClipM) Reverse(clipInfos []ClipInfo) {

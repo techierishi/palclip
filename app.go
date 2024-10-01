@@ -12,7 +12,6 @@ import (
 	wails_runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.design/x/clipboard"
 	"golang.design/x/hotkey"
-	"golang.design/x/hotkey/mainthread"
 )
 
 // App struct
@@ -30,21 +29,33 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	wails_runtime.EventsOn(ctx, "mark_secret", func(optionalData ...interface{}) {
-		fmt.Println("mark_secret", optionalData)
 		clipDb := config.GetInstance()
 
 		clipm := &clipm.ClipM{
 			DB: clipDb.DB,
 		}
-
 		clipm.MarkSecret(string(optionalData[0].(string)))
 
+	})
+
+	wails_runtime.EventsOn(ctx, "menu_clear", func(optionalData ...interface{}) {
+		clipDb := config.GetInstance()
+		clipm := &clipm.ClipM{
+			DB: clipDb.DB,
+		}
+		clipm.DeleteBucket()
+
+	})
+
+	wails_runtime.EventsOn(ctx, "menu_quit", func(optionalData ...interface{}) {
+		wails_runtime.Quit(ctx)
 	})
 
 	go clipm.Record(ctx)
 	// register hotkey on the app startup
 	// if you try to register it anywhere earlier - the app will hang on compile step
-	mainthread.Init(a.RegisterHotKey)
+	// mainthread.Init(a.RegisterHotKey)
+	a.RegisterHotKey()
 }
 
 func (a *App) GetClipData(name string) string {
@@ -80,7 +91,7 @@ func (a *App) RegisterHotKey() {
 }
 
 func registerHotkey(a *App) {
-	// the actual shortcut keybind - Ctrl + Shift + S
+	// the actual shortcut keybind - Ctrl + Shift + Space
 	// for more info - refer to the golang.design/x/hotkey documentation
 	hk := hotkey.New([]hotkey.Modifier{hotkey.ModCtrl, hotkey.ModShift}, hotkey.KeySpace)
 	err := hk.Register()

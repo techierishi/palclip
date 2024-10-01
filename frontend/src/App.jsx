@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import { GetClipData, CopyItemContent } from "../wailsjs/go/main/App";
 
@@ -16,13 +16,23 @@ import {
   MenuList,
   MenuItem,
   IconButton,
+  Button,
   Flex,
   Link,
-  useToast
+  useToast,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Textarea
 } from "@chakra-ui/react";
 
 import {
-  SettingsIcon,
+  HamburgerIcon,
   LockIcon,
   ExternalLinkIcon,
   CopyIcon
@@ -32,11 +42,18 @@ function App() {
   const toast = useToast();
   const [clipList, setClipList] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const settingsTextRef = useRef(null)
+  const initialRef = useRef(null)
+  const finalRef = useRef(null)
 
   const updateClipList = (result) => {
     const res = JSON.parse(result);
-    setClipList(res);
-    setFilteredData(res);
+    if (res) {
+      setClipList(res);
+      setFilteredData(res);
+    }
   };
 
   function filterByString(arr, searchString, key) {
@@ -56,6 +73,7 @@ function App() {
     EventsOn("Backend:GlobalHotkeyEvent", globalHotkeyEventHandler);
 
     clipData();
+
   }, []);
 
   function globalHotkeyEventHandler(time) {
@@ -96,7 +114,14 @@ function App() {
   function settings(e) {
     e.preventDefault();
     console.log("settings...");
-    EventsEmit("menu_settings", true);
+    onOpen()
+
+    setTimeout(()=>{
+      const settingsText = localStorage.getItem("settings")
+      if(settingsText && settingsTextRef.current){
+        settingsTextRef.current.value = settingsText
+      }
+    },1)
     return false;
   }
 
@@ -129,24 +154,29 @@ function App() {
 
   function clearStr(item) {
     let str = item.content;
-    if (!str){
-      return str
+    if (!str) {
+      return str;
     }
 
     if (item.is_secret) {
-      str = str.trim().replace(/ /g, '');
+      str = str.trim().replace(/ /g, "");
       return str.slice(0, 3) + "******";
     }
 
     if (str.length > 40) {
-      str = str.trim().replace(/ /g, '');
+      str = str.trim().replace(/ /g, " ");
       return str.slice(0, 40) + "...";
     }
     return str;
   }
 
+  function onSettingSave(e){
+    const settingsText = settingsTextRef.current.value
+    localStorage.setItem("settings", settingsText)
+    onClose()
+  }
   return (
-    <div id="pal-app">
+    <>
       <Card>
         <CardHeader style={{ padding: "5px" }}>
           <Flex>
@@ -161,13 +191,13 @@ function App() {
                 size="sm"
                 as={IconButton}
                 aria-label="Settings"
-                icon={<SettingsIcon />}
+                icon={<HamburgerIcon />}
                 style={{ marginLeft: "5px" }}
                 variant="outline"
               />
               <MenuList>
                 <MenuItem onClick={(e) => clear(e)}>Clear</MenuItem>
-                <MenuItem onClick={(e) => settings(e)}>Preference</MenuItem>
+                <MenuItem onClick={(e) => settings(e)}>Settings</MenuItem>
                 <MenuItem onClick={(e) => about(e)}>About</MenuItem>
                 <MenuItem onClick={(e) => quit(e)}>Quit</MenuItem>
               </MenuList>
@@ -219,7 +249,29 @@ function App() {
           </Stack>
         </CardBody>
       </Card>
-    </div>
+
+      <Modal
+        initialFocusRef={initialRef}
+        finalFocusRef={finalRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Settings</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+          <Textarea ref={settingsTextRef} placeholder='Settings yaml' />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme='blue' onClick={onSettingSave}  mr={3}>
+              Save
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
 
