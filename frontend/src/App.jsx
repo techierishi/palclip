@@ -28,7 +28,8 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Textarea
+  Textarea,
+  Tag
 } from "@chakra-ui/react";
 
 import {
@@ -42,11 +43,12 @@ function App() {
   const toast = useToast();
   const [clipList, setClipList] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
-  const settingsTextRef = useRef(null)
-  const initialRef = useRef(null)
-  const finalRef = useRef(null)
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [visibleRows, setVisibleRows] = useState([]);
+  const observer = useRef(null);
+  const settingsTextRef = useRef(null);
+  const initialRef = useRef(null);
+  const finalRef = useRef(null);
 
   const updateClipList = (result) => {
     const res = JSON.parse(result);
@@ -69,11 +71,25 @@ function App() {
     setFilteredData(newList);
   };
 
+  const handleKeyDown = (event) => {
+    if (event.keyCode >= 48 && event.keyCode <= 57) {
+      const itemAtIndex = filteredData[event.key]
+      copyContent(itemAtIndex.content);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   useEffect(() => {
     EventsOn("Backend:GlobalHotkeyEvent", globalHotkeyEventHandler);
 
     clipData();
-
   }, []);
 
   function globalHotkeyEventHandler(time) {
@@ -90,10 +106,14 @@ function App() {
 
   function copyItem(e, itemContent) {
     e.preventDefault();
+    copyContent(itemContent);
+    return false;
+  }
+
+  function copyContent(itemContent) {
     CopyItemContent(itemContent);
     toast({ description: "Copied!", duration: 500 });
     window.runtime.WindowHide();
-    return false;
   }
 
   function markSecret(e, item) {
@@ -114,14 +134,14 @@ function App() {
   function settings(e) {
     e.preventDefault();
     console.log("settings...");
-    onOpen()
+    onOpen();
 
-    setTimeout(()=>{
-      const settingsText = localStorage.getItem("settings")
-      if(settingsText && settingsTextRef.current){
-        settingsTextRef.current.value = settingsText
+    setTimeout(() => {
+      const settingsText = localStorage.getItem("settings");
+      if (settingsText && settingsTextRef.current) {
+        settingsTextRef.current.value = settingsText;
       }
-    },1)
+    }, 1);
     return false;
   }
 
@@ -165,15 +185,36 @@ function App() {
 
     if (str.length > 40) {
       str = str.trim().replace(/ /g, " ");
-      return str.slice(0, 40) + "...";
+      return str.slice(0, 30) + "...";
     }
     return str;
   }
 
-  function onSettingSave(e){
-    const settingsText = settingsTextRef.current.value
-    localStorage.setItem("settings", settingsText)
-    onClose()
+  function onSettingSave(e) {
+    const settingsText = settingsTextRef.current.value;
+    localStorage.setItem("settings", settingsText);
+    onClose();
+  }
+
+  function quickCopyIndexes(index) {
+    if (index > 9) {
+      return null;
+    }
+
+    return (
+      <Text pt="2" fontSize="xs" as="i" color="#666666">
+        <span
+          style={{
+            marginLeft: "5px",
+            borderRadius: "5px",
+            padding: "2px",
+            border: "0.5px solid #ddd"
+          }}
+        >
+          {index}
+        </span>
+      </Text>
+    );
   }
   return (
     <>
@@ -207,8 +248,8 @@ function App() {
 
         <CardBody style={{ padding: "10px" }}>
           <Stack spacing="2">
-            {filteredData.map((itm) => (
-              <Box key={itm.hash}>
+            {filteredData.map((itm, indx) => (
+              <Box key={itm.hash} data-index={indx}>
                 <Flex>
                   <Text
                     pt="2"
@@ -218,9 +259,11 @@ function App() {
                   >
                     {clearStr(itm)}
                   </Text>
-                  <Text pt="2" fontSize="xs" color="#cccccc">
+                  <Text pt="2" fontSize="xs" color="#999999">
                     {new Date(itm.timestamp).toISOString()}
                   </Text>
+
+                  {quickCopyIndexes(indx)}
 
                   <IconButton
                     colorScheme="teal"
@@ -261,11 +304,11 @@ function App() {
           <ModalHeader>Settings</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-          <Textarea ref={settingsTextRef} placeholder='Settings yaml' />
+            <Textarea ref={settingsTextRef} placeholder="Settings yaml" />
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' onClick={onSettingSave}  mr={3}>
+            <Button colorScheme="blue" onClick={onSettingSave} mr={3}>
               Save
             </Button>
           </ModalFooter>
