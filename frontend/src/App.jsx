@@ -73,23 +73,20 @@ function App() {
 
   const handleKeyDown = (event) => {
     if (event.keyCode >= 48 && event.keyCode <= 57) {
-      const itemAtIndex = filteredData[event.key]
-      copyContent(itemAtIndex.content);
+      const itemAtIndex = filteredData[Number(event.key)]
+      console.log("Key pressed ", event.key)
+      if (itemAtIndex && itemAtIndex.content) copyContent(itemAtIndex.content);
     }
   };
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    EventsOn("Backend:GlobalHotkeyEvent", globalHotkeyEventHandler);
+    clipData();
 
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
-
-  useEffect(() => {
-    EventsOn("Backend:GlobalHotkeyEvent", globalHotkeyEventHandler);
-
-    clipData();
   }, []);
 
   function globalHotkeyEventHandler(time) {
@@ -219,7 +216,7 @@ function App() {
   return (
     <>
       <Card>
-        <CardHeader style={{ padding: "5px" }}>
+        <CardHeader style={{ padding: "5px", marginTop: "30px" }}>
           <Flex>
             <Input
               className="search-input"
