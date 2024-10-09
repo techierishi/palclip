@@ -29,7 +29,14 @@ func main() {
 		},
 		Frameless: isFramelss,
 		Mac: &mac.Options{
-			TitleBar:             mac.TitleBarHiddenInset(),
+			TitleBar: &mac.TitleBar{
+				TitlebarAppearsTransparent: true,
+				HideTitle:                  true,
+				HideTitleBar:               true,
+				FullSizeContent:            true,
+				UseToolbar:                 true,
+				HideToolbarSeparator:       true,
+			},
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  false,
 		},

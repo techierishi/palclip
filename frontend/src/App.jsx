@@ -169,10 +169,10 @@ function App() {
     return false;
   }
 
-  function clearStr(item) {
+  function clearStr(item, isTitle) {
     let str = item.content;
     if (!str) {
-      return str;
+      return str
     }
 
     if (item.is_secret) {
@@ -180,11 +180,15 @@ function App() {
       return str.slice(0, 3) + "******";
     }
 
+    if(isTitle){
+      return str
+    }
+
     if (str.length > 40) {
       str = str.trim().replace(/ /g, " ");
       return str.slice(0, 30) + "...";
     }
-    return str;
+    return str
   }
 
   function onSettingSave(e) {
@@ -215,8 +219,8 @@ function App() {
   }
   return (
     <>
-      <Card>
-        <CardHeader style={{ padding: "5px", marginTop: "30px" }}>
+      <Card className="app-card">
+        <CardHeader style={{ padding: "5px", marginTop: "10px" }}>
           <Flex>
             <Input
               className="search-input"
@@ -243,7 +247,7 @@ function App() {
           </Flex>
         </CardHeader>
 
-        <CardBody style={{ padding: "10px" }}>
+        <CardBody className="app-card-body" style={{ padding: "10px" }}>
           <Stack spacing="2">
             {filteredData.map((itm, indx) => (
               <Box key={itm.hash} data-index={indx}>
@@ -252,9 +256,10 @@ function App() {
                     pt="2"
                     fontSize="sm"
                     flex="1"
+                    title={clearStr(itm, true)}
                     style={{ textAlign: "left" }}
                   >
-                    {clearStr(itm)}
+                    {clearStr(itm, false)}
                   </Text>
                   <Text pt="2" fontSize="xs" color="#999999">
                     {new Date(itm.timestamp).toISOString()}

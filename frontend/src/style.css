@@ -5,11 +5,21 @@ html {
     text-align: center;
     overflow-y: scroll;
     overflow-x: hidden;
+    border: 1px solid #999;
+    height: 100vh;
+    border-radius: 10px;
+}
+
+body {
+    height: 99vh;
+    border-radius: 10px;
+    overflow-y: scroll;
 }
 
 ::-webkit-scrollbar {
     width: 0;  
     background: transparent;  
+    height: 100vh;
 }
 
 ::-webkit-scrollbar-thumb {
